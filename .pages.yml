@@ -52,6 +52,121 @@ content:
             label: Title
             type: string
             description: Optional. Shown in the box's top border.
+          - name: year
+            label: Year
+            type: string
+            description: Optional. Shown in the box's bottom border, and after the title in the viewer.
+          - name: description
+            label: Description
+            type: text
+            description: Optional. Shown under the image and in the viewer.
+
+  - name: about
+    label: About page
+    type: file
+    path: src/content/pages/about.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: Box title
+        type: string
+      - name: body
+        label: About
+        type: rich-text
+
+  - name: links
+    label: Links page
+    type: file
+    path: src/content/pages/links.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: Box title
+        type: string
+      - name: body
+        label: Links
+        type: rich-text
+
+  - name: info
+    label: Info box (home page)
+    type: file
+    path: src/content/pages/info.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: Box title
+        type: string
+      - name: body
+        label: Info
+        type: rich-text
+
+  - name: site
+    label: Site settings
+    type: file
+    path: src/data/site.json
+    format: json
+    fields:
+      - name: name
+        label: Name (header)
+        type: string
+      - name: description
+        label: Site description
+        type: string
+        description: Not shown on the page. Used by search engines, link previews and the RSS feed.
+# Pages CMS config (https://app.pagescms.org)
+# Lets you write posts and edit pages in the browser. Every save is a commit,
+# and every commit rebuilds and redeploys the site.
+
+media:
+  input: public/images
+  output: /images
+
+content:
+  - name: posts
+    label: Posts
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: date
+      order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: description
+        label: Description
+        type: string
+        description: One line, used in the RSS feed and search results. Optional.
+      - name: draft
+        label: Draft
+        type: boolean
+        description: Drafts are hidden from the live site.
+      - name: body
+        label: Post
+        type: rich-text
+      - name: gallery
+        label: Gallery
+        description: Optional. Images shown in a 2-column grid after the post text. Clicking one opens the viewer.
+        type: object
+        list: true
+        fields:
+          - name: image
+            label: Image
+            type: image
+            required: true
+          - name: title
+            label: Title
+            type: string
+            description: Optional. Shown in the box's top border.
           - name: description
             label: Description
             type: text
