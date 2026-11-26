@@ -68,6 +68,7 @@
       }
       o.textContent = c[0] + top + c[2] + "\n" + mid + c[4] + bot + c[5];
     });
+    document.documentElement.classList.remove("loading");   // show the page (see Base.astro)
 
   }
 

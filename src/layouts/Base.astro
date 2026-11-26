@@ -30,6 +30,13 @@ const isCurrent = (href: string) =>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- hide the page until frame.js has drawn the borders, so it doesn't flash.
+         the timeout shows it anyway if the script ever fails to run. -->
+    <style is:inline>html { background: #000; } html.loading body { visibility: hidden; }</style>
+    <script is:inline>
+      document.documentElement.classList.add("loading");
+      setTimeout(() => document.documentElement.classList.remove("loading"), 1500);
+    </script>
     <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
     {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
   </head>
