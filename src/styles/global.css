@@ -86,22 +86,20 @@ html:not(.js) .frame { outline: 1px solid white; }   /* no-js fallback */
 main, aside { min-width: 0; margin: 0; }
 
 .masthead {
-  display: flex;               /* js snaps the box height up to a whole line; */
-  align-items: center;         /* flex splits that extra space evenly        */
+  display: flex;               /* name centered vertically and horizontally */
+  align-items: center;
   justify-content: center;
   text-align: center;
-  padding-block: calc(1.3em + clamp(0.4em, 2vh, 1.3em));   /* border line + a little air that scales with screen height */
+  padding-block: calc(1.3em + 0.6em);   /* border line + a little space */
 }
 .name {
-  display: inline-block;
   margin: 0;
   font-size: clamp(2.2em, 10vw, 3.6em);
-  line-height: 1.35;          /* spacing between lines if the name wraps */
+  line-height: 1.2;
   font-weight: bold;
   letter-spacing: 0.05em;
   color: transparent;
   -webkit-text-stroke: 1px white;
-  /* exact vertical centering is done in src/scripts/frame.js (centerInk) */
 }
 
 .cols {
@@ -120,7 +118,7 @@ main, aside { min-width: 0; margin: 0; }
    solid black so the background animation only shows around it */
 .outer { padding: calc(1.3em * 2) 4ch; background: #000; z-index: 1; }
 
-/* ascii mandelbrot behind the page (src/scripts/mandelbrot.js) */
+/* ascii mandelbrot behind the page (src/scripts/mandelbrot.js). not shown on phones */
 #bg {
   position: fixed;
   inset: 0;
@@ -131,7 +129,10 @@ main, aside { min-width: 0; margin: 0; }
   pointer-events: none;
   user-select: none;
 }
-@media (max-width: 720px) { .outer { padding: calc(1.3em * 1.5) 2ch; } }
+@media (max-width: 720px) {
+  .outer { padding: calc(1.3em * 1.5) 2ch; }
+  #bg { display: none; }
+}
 
 /* content boxes (everything except the menu and site header):
    one blank line between the border and the text, top and bottom */
@@ -231,7 +232,29 @@ main, aside { min-width: 0; margin: 0; }
   width: 100%;
   filter: none;               /* artwork stays in color. add grayscale(1) here for b&w */
 }
-.gallery.single img { width: auto; max-width: 100%; max-height: 80vh; align-self: center; }
+.gallery.single img {
+  width: 100%;                 /* full width keeps the reserved space before it loads; */
+  max-height: 80vh;            /* tall images are capped and shown whole, centred      */
+  object-fit: contain;
+}
+/* image placeholder: holds the image's space (width/height are set at build time),
+   shows "..." until it loads, then fades the image in (src/scripts/images.js) */
+.img-wrap { position: relative; display: block; }
+.js .img-wrap img { opacity: 0; transition: opacity 0.3s ease; }
+.js .img-wrap.loaded img { opacity: 1; }
+.js .img-wrap:not(.loaded)::after {
+  content: "...";
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 1.5ch);
+  transform: translateY(-50%);
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: loading-dots 1.2s steps(4, end) infinite;
+}
+@keyframes loading-dots { to { width: 4ch; } }
+
 .gallery figcaption, .viewer-desc { margin-top: 1.3em; margin-bottom: 0; opacity: 0.6; }
 img.zoomable { cursor: zoom-in; }
 
@@ -254,10 +277,11 @@ html:has(.viewer:not([hidden])) { overflow-anchor: none; }
   flex-direction: column;
   margin: 0 0 1.3em;
 }
+.viewer-wrap { flex: 1 1 0; min-height: 0; }
 .viewer-img {
-  flex: 1 1 0;
-  min-height: 0;
+  display: block;
   width: 100%;
+  height: 100%;
   object-fit: contain;            /* scale the whole image into the space, no cropping */
   cursor: e-resize;
 }

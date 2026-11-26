@@ -10,6 +10,8 @@
  * - a run of image-only paragraphs in a row becomes one 2-column grid;
  *   a lone image is shown full width.
  */
+import { imageDims } from "./image-dims.mjs";
+
 export default function rehypeFigures() {
   return (tree) => walk(tree);
 }
@@ -34,7 +36,12 @@ function figure(img) {
   const description = img.properties.title;
   delete img.properties.title;
   img.properties.loading = "lazy";
-  const children = [img];
+  img.properties.decoding = "async";
+  const dims = imageDims(img.properties.src);
+  if (dims) { img.properties.width = dims.width; img.properties.height = dims.height; }
+  // the wrapper holds the image's space and shows loading dots until it arrives
+  const wrap = { type: "element", tagName: "span", properties: { className: ["img-wrap"] }, children: [img] };
+  const children = [wrap];
   if (description) {
     children.push({
       type: "element",

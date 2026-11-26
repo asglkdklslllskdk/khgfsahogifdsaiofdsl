@@ -1,10 +1,12 @@
 {
-  "name": "Jace Guillory",
-  "description": "Jace Guillory's Homepage",
+  "name": "firstname lastname",
+  "url": "https://example.com",
+  "description": "a small corner of the web",
+  "sameAs": [],
   "headers": {
-    "about": "About Me",
-    "posts": "Posts and Whatnot",
-    "links": "Links?",
+    "about": "about",
+    "posts": "posts",
+    "links": "links",
     "notFound": "404"
   }
 }

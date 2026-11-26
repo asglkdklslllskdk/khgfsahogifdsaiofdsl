@@ -4,6 +4,7 @@ import site from "../../data/site.json";
 import Base from "../../layouts/Base.astro";
 import Panel from "../../components/Panel.astro";
 import { getPosts, formatDate } from "../../lib/posts";
+import { imageDims } from "../../lib/image-dims.mjs";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -12,10 +13,10 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
-const gallery = (post.data.gallery ?? []).filter((g) => g.image);
+const gallery = (post.data.gallery ?? []).filter((g) => g.image).map((g) => ({ ...g, dims: imageDims(g.image) }));
 ---
 
-<Base title={post.data.title} description={post.data.description} wide heading={site.headers.posts}>
+<Base title={post.data.title} description={post.data.description} wide heading={site.headers.posts} type="article">
   <Panel title="post" footer={post.data.draft ? "draft" : undefined} class="post-panel">
     <h2 class="post-title">{post.data.title}</h2>
     <p class="post-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time></p>
@@ -25,7 +26,10 @@ const gallery = (post.data.gallery ?? []).filter((g) => g.image);
         <div class:list={["gallery", { single: gallery.length === 1 }]}>
           {gallery.map((g) => (
             <figure class="frame" data-frame="single" data-title={g.title || undefined} data-footer={g.year}>
-              <img src={g.image} alt={g.title ?? ""} loading="lazy" />
+              <span class="img-wrap">
+                <img src={g.image} alt={g.title ?? ""} loading="lazy" decoding="async"
+                  width={g.dims?.width} height={g.dims?.height} />
+              </span>
               {g.description && <figcaption>{g.description}</figcaption>}
             </figure>
           ))}
@@ -35,7 +39,3 @@ const gallery = (post.data.gallery ?? []).filter((g) => g.image);
     <p class="back"><a href="/posts/">&lt;- all posts</a></p>
   </Panel>
 </Base>
-
-<script>
-  import "../../scripts/viewer.js";
-</script>

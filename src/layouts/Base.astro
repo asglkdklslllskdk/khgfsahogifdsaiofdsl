@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import site from "../data/site.json";
 
@@ -9,8 +10,10 @@ interface Props {
   wide?: boolean;
   /** big outlined text at the top. defaults to the site name (home page) */
   heading?: string;
+  /** "article" for posts; used by link previews */
+  type?: "website" | "article";
 }
-const { title, description = site.description, wide = false, heading = site.name } = Astro.props;
+const { title, description = site.description, wide = false, heading = site.name, type = "website" } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : site.name;
 
 const nav = [
@@ -22,31 +25,69 @@ const nav = [
 const path = Astro.url.pathname;
 const isCurrent = (href: string) =>
   href === "/" ? path === "/" : path.startsWith(href.replace(/\/$/, ""));
+
+const canonical = Astro.site ? new URL(path, Astro.site).href : undefined;
+const sameAs = (site.sameAs ?? []).filter(Boolean);
+// structured data on the home page: tells search engines this site belongs to a
+// person with this name, and which profiles elsewhere are also them
+const personLd =
+  path === "/"
+    ? JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: site.name,
+        url: Astro.site?.href,
+        ...(sameAs.length ? { sameAs } : {}),
+      })
+    : null;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" transition:animate="none">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    <!-- link previews (discord, imessage, slack, social sites) -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title ?? site.name} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta name="twitter:card" content="summary" />
+    {personLd && <script type="application/ld+json" set:html={personLd} />}
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <!-- hide the page until frame.js has drawn the borders, so it doesn't flash.
-         the timeout shows it anyway if the script ever fails to run. -->
-    <style is:inline>html { background: #000; } html.loading body { visibility: hidden; }</style>
-    <script is:inline>
-      document.documentElement.classList.add("loading");
-      setTimeout(() => document.documentElement.classList.remove("loading"), 1500);
-    </script>
     <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
-    {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <!-- first visit only: hide the page until frame.js has drawn the borders, so it
+         doesn't flash. later page changes are swapped in without a reload. the timeout
+         shows the page anyway if the script ever fails to run. -->
+    <style is:inline>
+      html { background: #000; }
+      html.loading body { visibility: hidden; }
+    </style>
+    <script is:inline>
+      if (!window.__framesReady) {
+        document.documentElement.classList.add("loading", "js");
+        setTimeout(() => document.documentElement.classList.remove("loading"), 1500);
+      }
+    </script>
+
+    <!-- page changes without a full reload; links are fetched ahead of time (see prefetch
+         in astro.config.mjs) so switching pages is instant -->
+    <ClientRouter />
   </head>
   <body>
-    <pre id="bg" aria-hidden="true"></pre>
+    <pre id="bg" aria-hidden="true" transition:persist></pre>
     <div class="frame outer" data-frame="double">
       <header class="frame masthead" data-frame="single">
-        <h1 class="name" data-center-ink>{heading}</h1>
+        <h1 class="name">{heading}</h1>
       </header>
 
       <div class:list={["cols", { wide }]}>
@@ -72,6 +113,8 @@ const isCurrent = (href: string) =>
 
     <script>
       import "../scripts/frame.js";
+      import "../scripts/images.js";
+      import "../scripts/viewer.js";
       import "../scripts/mandelbrot.js";
     </script>
   </body>

@@ -1,7 +1,10 @@
 /* ASCII Mandelbrot zoom behind the page.
    Settings: src/data/background.json (tuned with mandelbrot-bg.html)
-   - a random target from "targets" is picked on every page load
-   - clicking through images in a post doesn't reload the page, so the zoom carries on
+   - a random target from "targets" is picked on every page change, and the zoom
+     restarts. the <pre id="bg"> element is kept across page changes
+     (transition:persist), and this loop keeps running
+   - clicking through images in a post isn't a page change, so the zoom carries on
+   - not drawn at all on narrow (phone) screens
    - only the cells outside the page's outer box are calculated (the box is opaque),
      which keeps CPU use low
    - pauses while the tab is hidden; shows a still frame if the visitor has
@@ -18,13 +21,22 @@ const TARGETS = {
   needle:   [-1.985540371654130485531439267191269851811165434636382820704394766110272, 0],
 };
 
-const bg = document.getElementById("bg");
-if (bg) start();
+if (!window.__mandelbrot && document.getElementById("bg")) {
+  window.__mandelbrot = true;
+  start();
+}
 
 function start() {
+  const bg = document.getElementById("bg");
   const names = (S.targets || Object.keys(TARGETS)).filter((n) => TARGETS[n]);
-  const [tx, ty] = TARGETS[names[Math.floor(Math.random() * names.length)] || "seahorse"];
-  const cover = document.querySelector(".outer");          // opaque box: no need to draw under it
+  const mobile = matchMedia("(max-width: 720px)");
+  let tx = 0, ty = 0, cover = null;
+  function newPage() {
+    [tx, ty] = TARGETS[names[Math.floor(Math.random() * names.length)] || "seahorse"];
+    cover = document.querySelector(".outer");           // opaque box: no need to draw under it
+    t = 0;
+    boost = 1;
+  }
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const LOG2 = Math.log(2);
 
@@ -133,17 +145,25 @@ function start() {
     bg.textContent = lines.join("\n");
   }
 
+  let t = 0, last = performance.now(), lastDraw = -Infinity;
+  newPage();
+  document.addEventListener("astro:after-swap", newPage);
   measure();
   addEventListener("resize", measure);
 
-  let t = 0, last = performance.now(), lastDraw = -Infinity;
-  if (reduced) { render(0); addEventListener("resize", () => render(0)); return; }
+  if (reduced) {
+    const still = () => { if (!mobile.matches) render(0); };
+    still();
+    addEventListener("resize", still);
+    document.addEventListener("astro:after-swap", still);
+    return;
+  }
 
   function frame(now) {
     requestAnimationFrame(frame);
     const dt = Math.min(0.25, (now - last) / 1000);   // don't jump ahead after the tab was hidden
     last = now;
-    if (document.hidden) return;
+    if (document.hidden || mobile.matches) return;   // hidden tab or phone: do nothing
     t += dt;
     if (now - lastDraw < 1000 / S.fps - 1) return;
     lastDraw = now;
