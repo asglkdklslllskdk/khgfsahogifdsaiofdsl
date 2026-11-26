@@ -1,7 +1,8 @@
 ---
 title: info
 ---
+Hello!
 
-Placeholder intro. Who you are, what you make, why this site exists. One or two short sentences reads best in a box this size.
+This should be the only front facing site you can find under my name, I've been phasing out my social media for a variety of reasons over the past few years, however a small personal site like this felt like a happy medium.
 
-Email: [you@example.com](mailto:you@example.com)
+Here you'll find a little info about me, as well as some projects or other things I've decided to post. Cheers!
