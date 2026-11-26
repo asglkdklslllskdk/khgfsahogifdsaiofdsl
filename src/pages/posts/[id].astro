@@ -11,13 +11,30 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const gallery = (post.data.gallery ?? []).filter((g) => g.image);
 ---
 
 <Base title={post.data.title} description={post.data.description} wide>
-  <Panel title="post" footer={post.data.draft ? "draft" : undefined}>
+  <Panel title="post" footer={post.data.draft ? "draft" : undefined} class="post-panel">
     <h2 class="post-title">{post.data.title}</h2>
     <p class="post-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time></p>
-    <div class="prose"><Content /></div>
+    <div class="prose">
+      <Content />
+      {gallery.length > 0 && (
+        <div class:list={["gallery", { single: gallery.length === 1 }]}>
+          {gallery.map((g) => (
+            <figure class="frame" data-frame="single" data-title={g.title || undefined}>
+              <img src={g.image} alt={g.title ?? ""} loading="lazy" />
+              {g.description && <figcaption>{g.description}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      )}
+    </div>
     <p class="back"><a href="/posts/">&lt;- all posts</a></p>
   </Panel>
 </Base>
+
+<script>
+  import "../../scripts/viewer.js";
+</script>

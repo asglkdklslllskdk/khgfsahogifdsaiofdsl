@@ -27,6 +27,15 @@ code block
     exactly as typed
 ```
 
+Two images in a row become a 2-column grid:
+
+![sun study](/images/example/01.jpg "a description, written in the image's title")
+![garden](/images/example/05.jpg)
+
+One image on its own is full width:
+
+![flight](/images/example/07.jpg)
+
 ---
 
 That line above is a divider. Set `draft: true` in the settings at the top

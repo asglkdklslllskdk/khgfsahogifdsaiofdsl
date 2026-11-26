@@ -116,6 +116,8 @@
     });
   }
 
+  window.redrawFrames = draw;   // used by viewer.js after it swaps boxes
+
   let raf;
   const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };
   addEventListener("resize", () => { if (innerWidth !== lastW) schedule(); });

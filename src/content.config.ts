@@ -16,6 +16,16 @@ const posts = defineCollection({
     date: z.coerce.date(),
     description: z.string().optional(),
     draft: z.boolean().default(false),
+    // optional image grid shown after the post text (edited in Pages CMS)
+    gallery: z
+      .array(
+        z.object({
+          image: z.string(),
+          title: z.string().nullish(),
+          description: z.string().nullish(),
+        }),
+      )
+      .nullish(),
   }),
 });
 
