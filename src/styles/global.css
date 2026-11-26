@@ -101,9 +101,8 @@ main, aside { min-width: 0; margin: 0; }
   letter-spacing: 0.05em;
   color: transparent;
   -webkit-text-stroke: 1px white;
-  /* optical centering: trim to the x-height band (lowercase name).
-     if the name has capitals, use: trim-both cap alphabetic */
-  text-box: trim-both ex alphabetic;
+  /* vertical centering is done in src/scripts/frame.js (opticalCenter),
+     which measures the font so it works in every browser and font */
 }
 
 .cols {
@@ -117,6 +116,10 @@ main, aside { min-width: 0; margin: 0; }
 .menu li a::before { content: "  "; white-space: pre; }
 .menu li a:hover::before,
 .menu li a[aria-current]::before { content: "> "; }
+
+/* outer ╔═╗ frame: extra space between its border and the boxes inside */
+.outer { padding: calc(1.3em * 2) 4ch; }
+@media (max-width: 720px) { .outer { padding: calc(1.3em * 1.5) 2ch; } }
 
 /* content boxes (everything except the menu and site header):
    one blank line between the border and the text, top and bottom */
@@ -193,6 +196,3 @@ main, aside { min-width: 0; margin: 0; }
   height: auto;
   filter: grayscale(1);       /* keeps photos black and white; delete for color */
 }
-
-.outer { padding: calc(1.3em * 2) 4ch; }
-@media (max-width: 720px) { .outer { padding: calc(1.3em * 1.5) 2ch; } }
