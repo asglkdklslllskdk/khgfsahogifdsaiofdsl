@@ -1,0 +1,5 @@
+[
+  { "label": "github", "url": "https://github.com/", "note": "github.com/you" },
+  { "label": "a friend's site", "url": "https://example.com/", "note": "example.com" },
+  { "label": "something cool", "url": "https://example.org/", "note": "example.org" }
+]

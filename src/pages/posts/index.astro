@@ -1,0 +1,27 @@
+---
+import Base from "../../layouts/Base.astro";
+import Panel from "../../components/Panel.astro";
+import PostList from "../../components/PostList.astro";
+import { getPosts } from "../../lib/posts";
+
+const posts = await getPosts();
+
+// group by year, newest year first
+const years = new Map<number, typeof posts>();
+for (const post of posts) {
+  const y = post.data.date.getUTCFullYear();
+  years.set(y, [...(years.get(y) ?? []), post]);
+}
+---
+
+<Base title="posts">
+  {posts.length === 0 && (
+    <Panel title="posts"><p class="empty">no posts yet.</p></Panel>
+  )}
+  {[...years].map(([year, list]) => (
+    <Panel title={String(year)}>
+      <PostList posts={list} />
+    </Panel>
+  ))}
+  <p class="post-meta"><a href="/rss.xml">rss feed</a></p>
+</Base>

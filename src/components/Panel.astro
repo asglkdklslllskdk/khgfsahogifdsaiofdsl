@@ -1,0 +1,14 @@
+---
+// A boxed section: ┌─[ title ]──────┐
+interface Props {
+  title?: string;
+  footer?: string;
+  id?: string;
+  class?: string;
+}
+const { title, footer, id, class: className } = Astro.props;
+---
+
+<article id={id} class:list={["frame", className]} data-frame="single" data-title={title} data-footer={footer}>
+  <slot />
+</article>

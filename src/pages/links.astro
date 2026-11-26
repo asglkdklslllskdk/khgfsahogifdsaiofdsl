@@ -1,0 +1,19 @@
+---
+import Base from "../layouts/Base.astro";
+import Panel from "../components/Panel.astro";
+import links from "../data/links.json";
+---
+
+<Base title="links">
+  <Panel title="links">
+    <ul class="list">
+      {links.map((link) => (
+        <li>
+          <a href={link.url}>{link.label}</a>
+          <span class="dots" />
+          <span class="note">{link.note}</span>
+        </li>
+      ))}
+    </ul>
+  </Panel>
+</Base>

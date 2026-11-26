@@ -1,0 +1,65 @@
+---
+import "../styles/global.css";
+import site from "../data/site.json";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = site.description } = Astro.props;
+const pageTitle = title ? `${title} | ${site.name}` : site.name;
+
+const nav = [
+  { href: "/", label: "home" },
+  { href: "/about/", label: "about" },
+  { href: "/posts/", label: "posts" },
+  { href: "/links/", label: "links" },
+];
+const path = Astro.url.pathname;
+const isCurrent = (href: string) =>
+  href === "/" ? path === "/" : path.startsWith(href.replace(/\/$/, ""));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
+    {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
+  </head>
+  <body>
+    <div class="frame" data-frame="double">
+      <header class="frame masthead" data-frame="single">
+        <h1 class="name">{site.name}</h1>
+      </header>
+
+      <div class="cols">
+        <aside>
+          <nav class="frame menu" data-frame="single" data-title="menu">
+            <ul>
+              {nav.map((item) => (
+                <li>
+                  <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+
+        <main>
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <script>
+      import "../scripts/frame.js";
+    </script>
+  </body>
+</html>

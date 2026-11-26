@@ -1,0 +1,179 @@
+/* ---- base (user styling) ---- */
+body {
+  font-family: monospace;
+  font-size: 10pt;
+  line-height: 1.3;
+  margin-inline: auto;
+  margin-block: 2.6em;
+  width: 84ch;
+
+  background-color: black;
+  color: white;
+}
+
+pre {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    color: black;
+    background-color: white;
+  }
+}
+
+/* ---- grid discipline: everything is 1 line tall, no font-size changes ---- */
+h1, h2, h3, h4, p, ul, ol, table, figure, blockquote {
+  font-size: inherit;
+  font-weight: normal;
+  margin: 0 0 1.3em;
+}
+ul { list-style: none; padding: 0; }
+header, main, section, article { margin-bottom: 1.3em; }
+:is(header, main, section, article, aside, footer, nav) > :last-child { margin-bottom: 0; }
+::selection { background: white; color: black; }
+
+/* ---- frames ---- */
+.frame {
+  position: relative;
+  box-sizing: border-box;
+  padding: 1.3em 2ch;          /* 1 line top/bottom, border char + 1 space on sides */
+}
+.frame > :last-child,
+.frame > :nth-last-child(2):has(+ .frame-border) { margin-bottom: 0; }
+.frame-border {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+html:not(.js) .frame { outline: 1px solid white; }   /* no-js fallback */
+
+.rule {
+  white-space: nowrap;
+  overflow: hidden;
+  min-height: 1.3em;
+  margin-bottom: 1.3em;
+  user-select: none;
+}
+
+/* ---- responsive ascii art: wide on desktop, narrow on mobile ---- */
+.art { display: inline-block; text-align: left; max-width: 100%; overflow: hidden; vertical-align: top; }
+.art-narrow { display: none; }
+
+@media (max-width: 720px) {
+  body { width: auto; margin: 1.3em 1ch; }
+  .art-wide { display: none; }
+  .art-narrow { display: inline-block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+}
+
+/* ---- layout: header, sidebar menu, boxed panels ---- */
+.frame { margin-bottom: 1.3em; }
+.cols .frame:last-child { margin-bottom: 0; }
+main, aside { min-width: 0; margin: 0; }
+
+.masthead {
+  display: flex;               /* js snaps the box height up to a whole line; */
+  align-items: center;         /* flex splits that extra space evenly        */
+  justify-content: center;
+  text-align: center;
+  padding-block: calc(1.3em + clamp(1em, 6vh, 5em));   /* border line + extra air that scales with screen height */
+}
+.name {
+  display: inline-block;
+  margin: 0;
+  font-size: clamp(2.2em, 10vw, 3.6em);
+  line-height: 1.1;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px white;
+  /* optical centering: trim to the x-height band (lowercase name).
+     if the name has capitals, use: trim-both cap alphabetic */
+  text-box: trim-both ex alphabetic;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 24ch minmax(0, 1fr);
+  gap: 0 2ch;
+  align-items: start;
+}
+
+.menu li a { display: block; }
+.menu li a::before { content: "  "; white-space: pre; }
+.menu li a:hover::before,
+.menu li a[aria-current]::before { content: "> "; }
+
+.list li { display: flex; gap: 1ch; }
+.list .note { flex: none; opacity: 0.6; }
+.list .dots { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; opacity: 0.5; }
+.list .dots::before {
+  content: "................................................................................................................................";
+}
+
+@media (max-width: 720px) {
+  .cols { grid-template-columns: minmax(0, 1fr); }
+  .cols aside .frame:last-child { margin-bottom: 1.3em; }
+  .menu ul { display: flex; flex-wrap: wrap; gap: 0 2ch; }
+  .menu li a { display: inline; }
+  .menu li a::before,
+  .menu li a:hover::before,
+  .menu li a[aria-current]::before { content: "["; }
+  .menu li a::after { content: "]"; }
+  .menu li a[aria-current] { background: white; color: black; }
+  .list li { flex-direction: column; gap: 0; }
+  .list .dots { display: none; }
+}
+
+/* ---- long text (posts, about page) ---- */
+.post-meta { opacity: 0.6; }
+.post-title { margin-bottom: 0; font-weight: bold; }
+.back { margin-top: 1.3em; margin-bottom: 0; }
+.empty { opacity: 0.6; }
+
+.prose { overflow-wrap: break-word; }
+.prose > :last-child { margin-bottom: 0; }
+.prose p, .prose ul, .prose ol, .prose pre, .prose blockquote { margin: 0 0 1.3em; }
+
+/* markdown-style heading markers: ## heading */
+.prose h1, .prose h2, .prose h3, .prose h4 { font-weight: bold; margin: 0 0 1.3em; }
+.prose h1::before { content: "# ";    opacity: 0.5; }
+.prose h2::before { content: "## ";   opacity: 0.5; }
+.prose h3::before { content: "### ";  opacity: 0.5; }
+.prose h4::before { content: "#### "; opacity: 0.5; }
+
+/* links inside writing need some marker, otherwise they vanish into the text */
+.prose a { text-decoration: underline dotted; text-underline-offset: 0.2em; }
+
+.prose ul li { padding-left: 2ch; text-indent: -2ch; }
+.prose ul li::before { content: "- "; opacity: 0.6; }
+.prose ol { padding-left: 3ch; }
+
+.prose blockquote { margin-inline: 0; padding-left: 2ch; border-left: 1px solid white; }
+
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after { content: "`"; opacity: 0.5; }
+
+.prose pre {
+  overflow-x: auto;
+  padding: 0.65em 1ch;
+  border: 1px dashed white;
+}
+
+.prose hr { border: 0; margin: 0 0 1.3em; text-align: center; }
+.prose hr::after { content: "* * *"; opacity: 0.6; }
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  filter: grayscale(1);       /* keeps photos black and white; delete for color */
+}

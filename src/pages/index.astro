@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+import Panel from "../components/Panel.astro";
+import PostList from "../components/PostList.astro";
+import { getPosts } from "../lib/posts";
+import site from "../data/site.json";
+
+const latest = (await getPosts()).slice(0, 5);
+---
+
+<Base>
+  <Panel title="info" id="info">
+    <p>{site.info}</p>
+    <p>Email: <a href={`mailto:${site.email}`}>{site.email}</a></p>
+  </Panel>
+
+  <Panel title="latest posts" id="posts">
+    <PostList posts={latest} />
+  </Panel>
+</Base>
