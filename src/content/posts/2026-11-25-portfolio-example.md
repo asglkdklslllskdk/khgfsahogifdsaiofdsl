@@ -24,5 +24,4 @@ gallery:
   - image: /images/example/08.jpg
     title: signal
 ---
-
 A short intro to the collection. Click any piece to open the viewer.
