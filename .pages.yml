@@ -107,9 +107,27 @@ content:
     format: json
     fields:
       - name: name
-        label: Name (header)
+        label: Home page header (your name)
         type: string
+        description: Also used in the browser tab title and the RSS feed.
       - name: description
         label: Site description
         type: string
         description: Not shown on the page. Used by search engines, link previews and the RSS feed.
+      - name: headers
+        label: Page headers
+        type: object
+        description: The big outlined text at the top of each page.
+        fields:
+          - name: about
+            label: About page
+            type: string
+          - name: posts
+            label: Posts pages (list and each post)
+            type: string
+          - name: links
+            label: Links page
+            type: string
+          - name: notFound
+            label: Not-found (404) page
+            type: string
