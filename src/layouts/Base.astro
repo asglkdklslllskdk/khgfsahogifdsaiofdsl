@@ -43,6 +43,7 @@ const isCurrent = (href: string) =>
     {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
   </head>
   <body>
+    <pre id="bg" aria-hidden="true"></pre>
     <div class="frame outer" data-frame="double">
       <header class="frame masthead" data-frame="single">
         <h1 class="name" data-center-ink>{heading}</h1>
@@ -71,6 +72,7 @@ const isCurrent = (href: string) =>
 
     <script>
       import "../scripts/frame.js";
+      import "../scripts/mandelbrot.js";
     </script>
   </body>
 </html>

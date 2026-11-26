@@ -116,8 +116,21 @@ main, aside { min-width: 0; margin: 0; }
 .menu li a:hover::before,
 .menu li a[aria-current]::before { content: "> "; }
 
-/* outer ╔═╗ frame: extra space between its border and the boxes inside */
-.outer { padding: calc(1.3em * 2) 4ch; }
+/* outer ╔═╗ frame: extra space between its border and the boxes inside.
+   solid black so the background animation only shows around it */
+.outer { padding: calc(1.3em * 2) 4ch; background: #000; z-index: 1; }
+
+/* ascii mandelbrot behind the page (src/scripts/mandelbrot.js) */
+#bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+  user-select: none;
+}
 @media (max-width: 720px) { .outer { padding: calc(1.3em * 1.5) 2ch; } }
 
 /* content boxes (everything except the menu and site header):
