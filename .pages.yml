@@ -53,19 +53,30 @@ content:
         type: rich-text
 
   - name: links
-    label: Links
+    label: Links page
     type: file
-    path: src/data/links.json
-    format: json
-    list: true
+    path: src/content/pages/links.md
+    format: yaml-frontmatter
     fields:
-      - name: label
+      - name: title
+        label: Box title
         type: string
-      - name: url
+      - name: body
+        label: Links
+        type: rich-text
+
+  - name: info
+    label: Info box (home page)
+    type: file
+    path: src/content/pages/info.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: Box title
         type: string
-      - name: note
-        type: string
-        description: Short text shown on the right, e.g. example.com
+      - name: body
+        label: Info
+        type: rich-text
 
   - name: site
     label: Site settings
@@ -79,8 +90,4 @@ content:
       - name: description
         label: Site description
         type: string
-      - name: email
-        type: string
-      - name: info
-        label: Info box (home page)
-        type: text
+        description: Not shown on the page. Used by search engines, link previews and the RSS feed.
