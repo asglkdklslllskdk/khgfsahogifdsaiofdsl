@@ -94,4 +94,4 @@ gallery:
     title: Traffic Guy
     year: "2020"
 ---
-Mainly needed a place to keep these, as much for me as for any other viewers. Many images were taken in near infrared resulting in the strange colors.
+Photos & other digital art from over the years that needed a home. Many of the photos were taken in near infrared, resulting in some of the different colorings.
