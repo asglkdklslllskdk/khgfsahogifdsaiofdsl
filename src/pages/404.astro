@@ -1,9 +1,10 @@
 ---
+import site from "../data/site.json";
 import Base from "../layouts/Base.astro";
 import Panel from "../components/Panel.astro";
 ---
 
-<Base title="not found">
+<Base title="not found" heading={site.headers.notFound}>
   <Panel title="404">
     <p>nothing here.</p>
     <p><a href="/">&lt;- home</a></p>

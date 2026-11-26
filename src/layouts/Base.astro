@@ -7,8 +7,10 @@ interface Props {
   description?: string;
   /** full-width content with the menu as a row on top (used on post pages) */
   wide?: boolean;
+  /** big outlined text at the top. defaults to the site name (home page) */
+  heading?: string;
 }
-const { title, description = site.description, wide = false } = Astro.props;
+const { title, description = site.description, wide = false, heading = site.name } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : site.name;
 
 const nav = [
@@ -43,7 +45,7 @@ const isCurrent = (href: string) =>
   <body>
     <div class="frame outer" data-frame="double">
       <header class="frame masthead" data-frame="single">
-        <h1 class="name" data-optical-center="x">{site.name}</h1>
+        <h1 class="name" data-center-ink>{heading}</h1>
       </header>
 
       <div class:list={["cols", { wide }]}>

@@ -101,8 +101,7 @@ main, aside { min-width: 0; margin: 0; }
   letter-spacing: 0.05em;
   color: transparent;
   -webkit-text-stroke: 1px white;
-  /* vertical centering is done in src/scripts/frame.js (opticalCenter),
-     which measures the font so it works in every browser and font */
+  /* exact vertical centering is done in src/scripts/frame.js (centerInk) */
 }
 
 .cols {

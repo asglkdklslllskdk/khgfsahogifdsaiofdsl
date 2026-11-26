@@ -38,7 +38,7 @@
     const rules = [...document.querySelectorAll(".rule")];
     frames.forEach(f => { f.style.width = ""; f.style.height = ""; });
     rules.forEach(r => { r.textContent = ""; });
-    opticalCenter();   // before measuring: it changes the header's height
+    trimInk();
 
     // widths: outer -> inner
     frames.forEach(f => {
@@ -71,53 +71,94 @@
       }
       o.textContent = c[0] + top + c[2] + "\n" + mid + c[4] + bot + c[5];
     });
+    centerInk();
     document.documentElement.classList.remove("loading");   // show the page (see Base.astro)
     if (scrollX !== sx || scrollY !== sy) scrollTo(sx, sy);
 
   }
 
-  /* Optical centering for elements marked data-optical-center (the header name).
-     Flexbox centers an element's line box, but the eye centers on the letters, and the
-     text-drawn border lines don't sit exactly mid-row either. Both depend on the font,
-     so they're measured with canvas:
-       1. negative margins trim the box to the letters (top of the x-height on the
-          first line to the baseline of the last line), so flexbox centers the letters
-       2. a transform moves them to match where the border lines are actually drawn
-     data-optical-center="x"    lowercase letter height (default)
-     data-optical-center="cap"  capital height (use if the name has capitals) */
-  const ctx = document.createElement("canvas").getContext("2d");
-
-  function metrics(el, ch) {
+  /* Ink centering for elements marked data-center-ink (the header text).
+     Centers the letters actually drawn on screen between the border lines actually
+     drawn on screen, without trusting any font metrics:
+       - baselines come from the real layout (a zero-size probe element placed in the
+         text sits exactly on the baseline)
+       - how far the ink reaches above/below the baseline comes from drawing the
+         same text with the same font onto a canvas and scanning its pixels
+     The same is done for the horizontal border character. The element is then
+     moved with a transform, which doesn't affect layout. */
+  const inkCache = new Map();
+  function ink(el, text) {
     const cs = getComputedStyle(el);
-    // measure at 20x size: canvas rounds metrics to whole pixels
-    const size = parseFloat(cs.fontSize), k = 20;
-    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${size * k}px ${cs.fontFamily}`;
-    const r = ctx.measureText(ch);
-    const m = {
-      ascent: r.actualBoundingBoxAscent / k, descent: r.actualBoundingBoxDescent / k,
-      fontAscent: r.fontBoundingBoxAscent / k, fontDescent: r.fontBoundingBoxDescent / k,
-    };
-    const lh = parseFloat(cs.lineHeight) || size * 1.2;
-    // baseline position measured from the top of one line box
-    const baseline = (lh - (m.fontAscent + m.fontDescent)) / 2 + m.fontAscent;
-    return { m, lh, baseline };
+    const k = 4;                                       // draw 4x larger for sub-pixel accuracy
+    const size = parseFloat(cs.fontSize) * k;
+    const font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+    const key = font + "|" + text;
+    if (inkCache.has(key)) return inkCache.get(key);
+    const c = document.createElement("canvas");
+    const g = c.getContext("2d", { willReadFrequently: true });
+    g.font = font;
+    c.width = Math.ceil(g.measureText(text).width + size);
+    c.height = Math.ceil(size * 3);
+    const base = Math.round(size * 2);
+    g.font = font;                                     // resizing the canvas resets it
+    g.fillText(text, size / 2, base);
+    const data = g.getImageData(0, 0, c.width, c.height).data;
+    let top = -1, bottom = -1;
+    for (let y = 0; y < c.height; y++) {
+      for (let x = 3; x < c.width * 4; x += 4 * 1) {
+        if (data[y * c.width * 4 + x] > 0) { if (top < 0) top = y; bottom = y; break; }
+      }
+    }
+    const r = top < 0 ? { above: 0, below: 0 } : { above: (base - top) / k, below: (bottom + 1 - base) / k };
+    inkCache.set(key, r);
+    return r;
   }
 
-  function opticalCenter() {
-    document.querySelectorAll("[data-optical-center]").forEach(el => {
+  function baselineAt(parent, atEnd) {
+    const p = document.createElement("span");
+    p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+    atEnd ? parent.append(p) : parent.prepend(p);
+    const y = p.getBoundingClientRect().top;
+    p.remove();
+    return y;
+  }
+
+  // before the frames are measured: shrink the element's box to its ink with
+  // negative margins, so the header is only as tall as the letters + padding
+  function trimInk() {
+    document.querySelectorAll("[data-center-ink]").forEach(el => {
+      el.style.margin = "";
+      el.style.transform = "";
+      const r = el.getBoundingClientRect();
+      const t = ink(el, el.textContent.trim());
+      const inkTop = baselineAt(el, false) - t.above;
+      const inkBottom = baselineAt(el, true) + t.below;
+      el.style.marginTop = -(inkTop - r.top).toFixed(2) + "px";
+      el.style.marginBottom = -(r.bottom - inkBottom).toFixed(2) + "px";
+    });
+  }
+
+  // after the borders are drawn: move the letters to the exact middle between them
+  function centerInk() {
+    document.querySelectorAll("[data-center-ink]").forEach(el => {
       const frame = el.closest(".frame");
-      if (!frame) return;
+      const border = frame && frame.querySelector(":scope > .frame-border");
+      if (!border || !frame._rows) return;
+      el.style.transform = "";
 
-      // 1. trim the line box to the letters
-      const t = metrics(el, el.dataset.opticalCenter === "cap" ? "H" : "x");
-      el.style.marginTop = -(t.baseline - t.m.ascent) + "px";
-      el.style.marginBottom = -(t.lh - t.baseline) + "px";
+      // drawn border lines: top row and bottom row of the border text
+      const hChar = [...border.textContent][1];
+      const b = ink(border, hChar);
+      const row0 = baselineAt(border, false) - (b.above - b.below) / 2;
+      const lineMid = row0 + ((frame._rows - 1) * lh) / 2;
 
-      // 2. offset of the drawn horizontal border line from the middle of its row
-      const hChar = [...(SETS[frame.dataset.frame] || frame.dataset.frame || SETS.ascii)][1];
-      const b = metrics(frame, hChar);
-      const ink = b.baseline - (b.m.ascent - b.m.descent) / 2;
-      el.style.transform = `translateY(${(ink - b.lh / 2).toFixed(2)}px)`;
+      // drawn letters: first line's baseline to last line's baseline
+      const text = el.textContent.trim();
+      const t = ink(el, text);
+      const top = baselineAt(el, false) - t.above;
+      const bottom = baselineAt(el, true) + t.below;
+
+      el.style.transform = `translateY(${(lineMid - (top + bottom) / 2).toFixed(2)}px)`;
     });
   }
 

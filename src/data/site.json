@@ -1,4 +1,10 @@
 {
-  "name": "Jace Guillory",
-  "description": "Jace Guillory's Website"
+  "name": "firstname lastname",
+  "description": "a small corner of the web",
+  "headers": {
+    "about": "about",
+    "posts": "posts",
+    "links": "links",
+    "notFound": "404"
+  }
 }

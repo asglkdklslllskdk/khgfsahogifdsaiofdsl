@@ -1,5 +1,6 @@
 ---
 import { render } from "astro:content";
+import site from "../../data/site.json";
 import Base from "../../layouts/Base.astro";
 import Panel from "../../components/Panel.astro";
 import { getPosts, formatDate } from "../../lib/posts";
@@ -14,7 +15,7 @@ const { Content } = await render(post);
 const gallery = (post.data.gallery ?? []).filter((g) => g.image);
 ---
 
-<Base title={post.data.title} description={post.data.description} wide>
+<Base title={post.data.title} description={post.data.description} wide heading={site.headers.posts}>
   <Panel title="post" footer={post.data.draft ? "draft" : undefined} class="post-panel">
     <h2 class="post-title">{post.data.title}</h2>
     <p class="post-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time></p>

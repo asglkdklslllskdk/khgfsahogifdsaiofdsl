@@ -1,4 +1,5 @@
 ---
+import site from "../../data/site.json";
 import Base from "../../layouts/Base.astro";
 import Panel from "../../components/Panel.astro";
 import PostList from "../../components/PostList.astro";
@@ -14,7 +15,7 @@ for (const post of posts) {
 }
 ---
 
-<Base title="posts">
+<Base title="posts" heading={site.headers.posts}>
   {posts.length === 0 && (
     <Panel title="posts"><p class="empty">no posts yet.</p></Panel>
   )}
