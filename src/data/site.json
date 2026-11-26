@@ -1,12 +1,10 @@
 {
-  "name": "firstname lastname",
-  "url": "https://example.com",
-  "description": "a small corner of the web",
-  "sameAs": [],
+  "name": "Jace Guillory",
+  "description": "Jace Guillory's Homepage",
   "headers": {
-    "about": "about",
-    "posts": "posts",
-    "links": "links",
+    "about": "About Me",
+    "posts": "Posts and Whatnot",
+    "links": "Links?",
     "notFound": "404"
   }
 }
