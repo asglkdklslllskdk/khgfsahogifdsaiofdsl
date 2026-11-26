@@ -1,5 +1,7 @@
 /* ---- base (user styling) ---- */
 html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   background-color: black;   /* fills the whole window, not just the page */
   color-scheme: dark;         /* dark scrollbars / overscroll in browsers that support it */
 }
