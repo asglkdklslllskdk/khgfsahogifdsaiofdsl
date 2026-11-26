@@ -9,6 +9,6 @@ interface Props {
 const { title, footer, id, class: className } = Astro.props;
 ---
 
-<article id={id} class:list={["frame", className]} data-frame="single" data-title={title} data-footer={footer}>
+<article id={id} class:list={["frame", "panel", className]} data-frame="single" data-title={title} data-footer={footer}>
   <slot />
 </article>
