@@ -38,6 +38,24 @@ content:
       - name: body
         label: Post
         type: rich-text
+      - name: gallery
+        label: Gallery
+        description: Optional. Images shown in a 2-column grid after the post text. Clicking one opens the viewer.
+        type: object
+        list: true
+        fields:
+          - name: image
+            label: Image
+            type: image
+            required: true
+          - name: title
+            label: Title
+            type: string
+            description: Optional. Shown in the box's top border.
+          - name: description
+            label: Description
+            type: text
+            description: Optional. Shown under the image and in the viewer.
 
   - name: about
     label: About page
