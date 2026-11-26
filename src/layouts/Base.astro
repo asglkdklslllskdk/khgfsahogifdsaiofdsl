@@ -5,8 +5,10 @@ import site from "../data/site.json";
 interface Props {
   title?: string;
   description?: string;
+  /** full-width content with the menu as a row on top (used on post pages) */
+  wide?: boolean;
 }
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, wide = false } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : site.name;
 
 const nav = [
@@ -37,7 +39,7 @@ const isCurrent = (href: string) =>
         <h1 class="name">{site.name}</h1>
       </header>
 
-      <div class="cols">
+      <div class:list={["cols", { wide }]}>
         <aside>
           <nav class="frame menu" data-frame="single" data-title="menu">
             <ul>

@@ -1,17 +1,21 @@
 ---
+import { getEntry, render } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Panel from "../components/Panel.astro";
 import PostList from "../components/PostList.astro";
 import { getPosts } from "../lib/posts";
-import site from "../data/site.json";
+
+// info box text lives in src/content/pages/info.md
+const info = await getEntry("pages", "info");
+if (!info) throw new Error("missing src/content/pages/info.md");
+const { Content: Info } = await render(info);
 
 const latest = (await getPosts()).slice(0, 5);
 ---
 
 <Base>
-  <Panel title="info" id="info">
-    <p>{site.info}</p>
-    <p>Email: <a href={`mailto:${site.email}`}>{site.email}</a></p>
+  <Panel title={info.data.title} id="info">
+    <div class="prose"><Info /></div>
   </Panel>
 
   <Panel title="latest posts" id="posts">

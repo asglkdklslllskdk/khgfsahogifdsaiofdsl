@@ -1,4 +1,9 @@
 /* ---- base (user styling) ---- */
+html {
+  background-color: black;   /* fills the whole window, not just the page */
+  color-scheme: dark;         /* dark scrollbars / overscroll in browsers that support it */
+}
+
 body {
   font-family: monospace;
   font-size: 10pt;
@@ -85,13 +90,13 @@ main, aside { min-width: 0; margin: 0; }
   align-items: center;         /* flex splits that extra space evenly        */
   justify-content: center;
   text-align: center;
-  padding-block: calc(1.3em + clamp(1em, 6vh, 5em));   /* border line + extra air that scales with screen height */
+  padding-block: calc(1.3em + clamp(0.4em, 2vh, 1.3em));   /* border line + a little air that scales with screen height */
 }
 .name {
   display: inline-block;
   margin: 0;
   font-size: clamp(2.2em, 10vw, 3.6em);
-  line-height: 1.1;
+  line-height: 1.35;          /* spacing between lines if the name wraps */
   font-weight: bold;
   letter-spacing: 0.05em;
   color: transparent;
@@ -112,6 +117,13 @@ main, aside { min-width: 0; margin: 0; }
 .menu li a::before { content: "  "; white-space: pre; }
 .menu li a:hover::before,
 .menu li a[aria-current]::before { content: "> "; }
+
+/* wide pages (single post): content spans the full width, menu sits on top as one row,
+   keeping the "> " current-page marker */
+.cols.wide { grid-template-columns: minmax(0, 1fr); }
+.cols.wide aside .frame:last-child { margin-bottom: 1.3em; }
+.cols.wide .menu ul { display: flex; flex-wrap: wrap; gap: 0 2ch; }
+.cols.wide .menu li a { display: inline; }
 
 .list li { display: flex; gap: 1ch; }
 .list .note { flex: none; opacity: 0.6; }
