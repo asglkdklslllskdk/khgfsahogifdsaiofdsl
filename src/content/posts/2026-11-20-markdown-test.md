@@ -2,8 +2,8 @@
 title: markdown test
 date: 2026-11-20
 description: every formatting option, to check the styles
+draft: true
 ---
-
 A paragraph with **bold**, *italic*, `inline code` and [a link](https://example.com).
 
 ## a heading
