@@ -22,6 +22,8 @@ const posts = defineCollection({
         z.object({
           image: z.string(),
           title: z.string().nullish(),
+          // YAML reads `year: 2026` as a number; keep it as text
+          year: z.union([z.string(), z.number()]).nullish().transform((y) => (y == null || y === "" ? undefined : String(y))),
           description: z.string().nullish(),
         }),
       )

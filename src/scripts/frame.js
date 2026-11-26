@@ -14,7 +14,7 @@
     dots:   ".-.:''",
   };
   document.documentElement.classList.add("js");
-  let cw = 8, lh = 16, lastW = 0;
+  let cw = 8, lh = 16, lastW = 0, lastH = 0;
 
   function measure() {
     const p = document.createElement("pre");
@@ -29,7 +29,10 @@
   }
 
   function draw() {
-    lastW = innerWidth;
+    lastW = innerWidth; lastH = innerHeight;
+    // sizes are reset and re-measured below, which briefly shortens the page and can
+    // make the browser jump the scroll position. remember it and put it back after.
+    const sx = scrollX, sy = scrollY;
     measure();
     const frames = [...document.querySelectorAll(".frame")];
     const rules = [...document.querySelectorAll(".rule")];
@@ -69,6 +72,7 @@
       o.textContent = c[0] + top + c[2] + "\n" + mid + c[4] + bot + c[5];
     });
     document.documentElement.classList.remove("loading");   // show the page (see Base.astro)
+    if (scrollX !== sx || scrollY !== sy) scrollTo(sx, sy);
 
   }
 
@@ -121,7 +125,7 @@
 
   let raf;
   const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };
-  addEventListener("resize", () => { if (innerWidth !== lastW) schedule(); });
+  addEventListener("resize", () => { if (innerWidth !== lastW || innerHeight !== lastH) schedule(); });
   if (document.fonts) document.fonts.ready.then(schedule);
   addEventListener("load", schedule);   // images change heights once loaded
   document.querySelectorAll("img").forEach(img => img.addEventListener("load", schedule));

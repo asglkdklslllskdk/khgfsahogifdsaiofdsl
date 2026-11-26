@@ -27,9 +27,9 @@ code block
     exactly as typed
 ```
 
-Two images in a row become a 2-column grid:
+Two images in a row become a 2-column grid. A year at the end of the title moves to the bottom border:
 
-![sun study](/images/example/01.jpg "a description, written in the image's title")
+![sun study, 2026](/images/example/01.jpg "a description, written in the image's title")
 ![garden](/images/example/05.jpg)
 
 One image on its own is full width:

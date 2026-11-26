@@ -4,7 +4,9 @@
    - URL becomes /posts/name/#image-3, so links to a single image work and the
      browser back button returns to the post
    - keys: left/right arrows to step, Esc to close
-   - clicking the image goes to the next one */
+   - clicking the image goes to the next one
+   The viewer box is sized to the window (see .viewer in global.css), so the frame
+   and arrows stay in the same place for every image. */
 (() => {
   const post = document.querySelector(".post-panel");
   if (!post) return;
@@ -14,9 +16,12 @@
   const items = imgs.map((img) => {
     const fig = img.closest("figure");
     const cap = fig && fig.querySelector("figcaption");
+    const title = (fig && fig.dataset.title) || img.alt || "";
+    const year = (fig && fig.dataset.footer) || "";
     return {
       src: img.currentSrc || img.src,
-      title: (fig && fig.dataset.title) || img.alt || "",
+      alt: title,
+      label: [title, year].filter(Boolean).join(", "),   // [ title, 2026 ]
       description: cap ? cap.textContent : "",
     };
   });
@@ -63,18 +68,23 @@
       return;
     }
     const it = items[i];
-    if (viewer.hidden) returnTo = imgs[i];
+    const opening = viewer.hidden;
+    if (opening) returnTo = imgs[i];
     vImg.src = it.src;
-    vImg.alt = it.title;
-    viewer.dataset.title = it.title;
-    if (!it.title) delete viewer.dataset.title;
+    vImg.alt = it.alt;
+    viewer.dataset.title = it.label;
+    if (!it.label) delete viewer.dataset.title;
     vDesc.textContent = it.description;
     vDesc.hidden = !it.description;
     vCount.textContent = `${i + 1} / ${items.length}`;
     post.hidden = true;
     viewer.hidden = false;
     redraw();
-    viewer.scrollIntoView({ block: "start" });
+    // on open, centre the box in the window. while stepping, nothing moves.
+    if (opening) {
+      const r = viewer.getBoundingClientRect();
+      scrollTo({ top: scrollY + r.top - Math.max(0, (innerHeight - r.height) / 2) });
+    }
     // preload neighbours
     [i - 1, i + 1].forEach((j) => { if (items[j]) new Image().src = items[j].src; });
   }

@@ -23,7 +23,7 @@ const gallery = (post.data.gallery ?? []).filter((g) => g.image);
       {gallery.length > 0 && (
         <div class:list={["gallery", { single: gallery.length === 1 }]}>
           {gallery.map((g) => (
-            <figure class="frame" data-frame="single" data-title={g.title || undefined}>
+            <figure class="frame" data-frame="single" data-title={g.title || undefined} data-footer={g.year}>
               <img src={g.image} alt={g.title ?? ""} loading="lazy" />
               {g.description && <figcaption>{g.description}</figcaption>}
             </figure>
