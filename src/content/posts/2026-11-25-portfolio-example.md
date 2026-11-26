@@ -2,7 +2,7 @@
 title: portfolio example
 date: 2026-11-25
 description: example gallery post with placeholder images
-draft: true
+draft: false
 gallery:
   - image: /images/example/01.jpg
     title: sun study
