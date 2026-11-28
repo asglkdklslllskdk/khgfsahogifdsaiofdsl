@@ -62,8 +62,8 @@ gallery:
   - image: /images/deepdream ball 2018.webp
     title: Deepdream Ball
     year: "2018"
-    description: Old one, used the original google deepdream tensorflow neural net
-      for this prior to modern ai generation started being a thing
+    description: Old one, used the original google deepdream tensorflow model on an
+      abstract photo to generate the patterns
   - image: /images/pixel sort 2020.webp
     title: Pixel Sort
     year: "2020"
