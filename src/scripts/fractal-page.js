@@ -1,10 +1,10 @@
 /* Full-screen fractal page (/fractal/, not linked from the site).
    Same look as the background (src/data/background.json), plus:
-   - mouse                  a line is drawn from the middle of the screen to the pointer.
-                            the view travels along that line: its direction is the
-                            direction of travel, its length the speed (non-linear:
-                            short = slow drift, long = fast). pointer in the small circle
-                            in the middle, or outside the window: no movement
+   - mouse                  the view travels along the line from the crosshair (middle of
+                            the screen) to the pointer: its direction is the direction of
+                            travel, its length the speed (non-linear: short = slow drift,
+                            long = fast). pointer right on the crosshair, or outside the
+                            window: no movement
    - W / S                  faster / slower overall
    - - and =                smaller / larger characters (more / less resolution)
    - r                      restart the zoom at a new random point
@@ -25,7 +25,7 @@ let SPEED = 1;                    // overall travel speed; w / s multiply / divi
 const SPEED_MIN = 0.05, SPEED_MAX = 20, SPEED_STEP = 1.25;
 const MAX_SPEED = 0.8;            // screen-widths per second with the pointer at the window's edge (at SPEED 1)
 const CURVE = 1.6;                // speed = (distance / edge distance) ^ CURVE: >1 = gentle near the middle
-const DEAD = 14;                  // px radius around the middle where nothing moves
+const DEAD = 10;                  // px radius around the crosshair where nothing moves
 const FONT_MIN = 3, FONT_MAX = 24, FONT_STEP = 1;
 
 const el = document.getElementById("fractal");
@@ -90,23 +90,6 @@ function steer() {
   return { dx, dy, dist, vx: (dx / dist) * speed, vy: (dy / dist) * speed };
 }
 
-// the on-screen line from the middle to the pointer (svg in fractal.astro)
-const svg = document.getElementById("vec");
-const line = svg.querySelector("line");
-const ring = svg.querySelector("circle");
-function drawVector(vec) {
-  const mx = innerWidth / 2, my = innerHeight / 2;
-  svg.setAttribute("viewBox", `0 0 ${innerWidth} ${innerHeight}`);
-  ring.setAttribute("cx", mx); ring.setAttribute("cy", my); ring.setAttribute("r", DEAD);
-  svg.classList.toggle("idle", !vec || vec.dist <= DEAD);
-  if (vec && vec.dist > DEAD) {
-    line.setAttribute("x1", mx + (vec.dx / vec.dist) * DEAD);
-    line.setAttribute("y1", my + (vec.dy / vec.dist) * DEAD);
-    line.setAttribute("x2", mouse.x);
-    line.setAttribute("y2", mouse.y);
-  }
-}
-
 function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.25, (now - last) / 1000);
@@ -122,7 +105,6 @@ function frame(now) {
   // travel along the vector from the screen's middle to the pointer
   const vec = steer();
   if (vec) moveBy(vec.vx * step, vec.vy * step);
-  drawVector(vec);
 
   R.render({ cx, cy, zl, sec: t });
 
