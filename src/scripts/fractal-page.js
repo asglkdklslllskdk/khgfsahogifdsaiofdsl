@@ -1,8 +1,10 @@
 /* Full-screen fractal page (/fractal/, not linked from the site).
    Same look as the background (src/data/background.json), plus:
-   - W A S D                steer smoothly: moves the point being zoomed into, in real time
-   - arrow keys             nudge by exactly 1 character cell (5 with shift held);
-                            holding the key repeats at the keyboard's repeat rate
+   - mouse                  the zoom heads toward wherever the pointer is: the spot under
+                            the pointer glides to the middle of the screen. eased, not
+                            linear: it slows as it arrives, and drifts gently when the
+                            pointer is near the middle but pulls hard near the edges
+   - W / S                  follow faster / slower
    - - and =                smaller / larger characters (more / less resolution)
    - r                      restart the zoom at a new random point
    - h                      hide / show the info line
@@ -18,7 +20,9 @@ const S = {
 };
 const MIN_FPS = 20;
 const MAX_ZOOM_LOG = 43;          // 2^43 ≈ 9e12: past this, double precision turns blocky
-const PAN = 0.6;                  // steering speed, in view-widths per second
+let FOLLOW = 0.8;                 // how fast the centre follows the pointer (per second); w / s change it
+const FOLLOW_MIN = 0.05, FOLLOW_MAX = 8, FOLLOW_STEP = 1.25;
+const CURVE = 0.6;                // >0: weaker pull near the middle, stronger near the edges
 const FONT_MIN = 3, FONT_MAX = 24, FONT_STEP = 1;
 
 const el = document.getElementById("fractal");
@@ -29,7 +33,7 @@ addEventListener("resize", R.measure);
 
 let cx = 0, cy = 0, t = 0, zl = 0;
 const zoomRate = Math.log2(S.speed);           // octaves per second
-const held = new Set();
+let mouse = null;                                // pointer position in pixels, or null if outside the window
 let last = performance.now(), lastDraw = -Infinity;
 let frames = [];                                // timestamps of recent rendered frames
 let fpsFrom = performance.now();                // fps is only trusted after a full second of samples
@@ -41,9 +45,6 @@ function restart(reason) {
   note = reason ? `restarted: ${reason}` : "";
   if (reason) setTimeout(() => { if (note.startsWith("restarted")) note = ""; }, 2500);
 }
-
-const KEYS = { w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] };          // smooth steering
-const NUDGE = { arrowup: [0, -1], arrowdown: [0, 1], arrowleft: [-1, 0], arrowright: [1, 0] };
 
 // screen offset in pixels -> offset in the complex plane (the view slowly rotates)
 function moveBy(pxX, pxY) {
@@ -57,19 +58,16 @@ function moveBy(pxX, pxY) {
 addEventListener("keydown", (e) => {
   if (e.altKey || e.ctrlKey || e.metaKey) return;
   const k = e.key.toLowerCase();
-  if (NUDGE[k]) {
-    const n = e.shiftKey ? 5 : 1;
-    moveBy(NUDGE[k][0] * n * R.cw, NUDGE[k][1] * n * R.ch);   // whole character cells
-    e.preventDefault();
-  }
-  else if (KEYS[k]) { held.add(k); e.preventDefault(); }
+  if (k === "w") FOLLOW = Math.min(FOLLOW_MAX, FOLLOW * FOLLOW_STEP);
+  else if (k === "s") FOLLOW = Math.max(FOLLOW_MIN, FOLLOW / FOLLOW_STEP);
   else if (k === "r") restart("r key");
   else if (k === "h") hud.hidden = !hud.hidden;
   else if (k === "-" || k === "_") setFont(S.fontSize - FONT_STEP);
   else if (k === "=" || k === "+") setFont(S.fontSize + FONT_STEP);
 });
-addEventListener("keyup", (e) => held.delete(e.key.toLowerCase()));
-addEventListener("blur", () => held.clear());
+addEventListener("pointermove", (e) => { mouse = { x: e.clientX, y: e.clientY }; });
+document.documentElement.addEventListener("pointerleave", () => { mouse = null; });
+addEventListener("blur", () => { mouse = null; });
 
 function setFont(px) {
   S.fontSize = Math.max(FONT_MIN, Math.min(FONT_MAX, px));
@@ -89,12 +87,18 @@ function frame(now) {
   t += step;
   zl += zoomRate * step;
 
-  // steering: move the centre along the screen's directions (the view slowly rotates)
-  let sx = 0, sy = 0;
-  held.forEach((k) => { sx += KEYS[k][0]; sy += KEYS[k][1]; });
-  if (sx || sy) {
-    const px = (PAN * innerWidth * step) / Math.hypot(sx, sy);   // pixels to move this frame
-    moveBy(sx * px, sy * px);
+  // follow the pointer: move part of the way from the screen middle toward it.
+  // 1 - e^(-rate*dt) gives smooth easing that doesn't depend on the frame rate;
+  // the distance curve makes small offsets drift and large ones pull hard
+  if (mouse) {
+    const dx = mouse.x - innerWidth / 2, dy = mouse.y - innerHeight / 2;
+    const dist = Math.hypot(dx, dy);
+    if (dist > 0.5) {
+      const reach = Math.hypot(innerWidth, innerHeight) / 2;
+      const rate = FOLLOW * Math.pow(Math.min(1, dist / reach), CURVE) * 3;
+      const f = 1 - Math.exp(-rate * step);
+      moveBy(dx * f, dy * f);
+    }
   }
 
   R.render({ cx, cy, zl, sec: t });
@@ -114,7 +118,8 @@ function frame(now) {
     hud.textContent =
       `zoom ${Math.pow(2, zl).toExponential(1)}  ${ready ? fps : "--"} fps  iter ${R.maxIter}  ` +
       `font ${S.fontSize}px (${R.cols}x${R.rows})` + (note ? `  ${note}` : "") +
-      `\nwasd steer   arrows nudge 1 cell (shift: 5)   - = resolution   r restart   h hide`;
+      `  follow ${FOLLOW.toFixed(2)}` +
+      `\nmouse steers   w s follow faster/slower   - = resolution   r restart   h hide`;
   }
 }
 
