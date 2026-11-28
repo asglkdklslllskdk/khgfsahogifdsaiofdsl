@@ -1,5 +1,7 @@
 /* ---- base (user styling) ---- */
 html {
+  /* stop iPhone Safari from enlarging some text on its own ("text autosizing"). it
+     breaks the character grid the borders are built on */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background-color: black;   /* fills the whole window, not just the page */
@@ -133,7 +135,43 @@ main, aside { min-width: 0; margin: 0; }
 }
 @media (max-width: 720px) {
   .outer { padding: calc(1.3em * 1.5) 2ch; }
-  #bg { display: none; }
+}
+@media (max-width: 720px), (hover: none) and (pointer: coarse) {
+  #bg { display: none; }       /* phones and touch tablets: no background */
+}
+
+/* background on/off switch (src/scripts/bg-toggle.js)
+   - pages with the sidebar: a small box under the menu
+   - post pages: fixed in the top-right corner of the window, when there's room
+     beside the page; on narrower windows, at the right end of the menu row
+   - never on phones or touch-screen tablets (no background there) */
+.bg-toggle {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  white-space: pre;
+}
+.bg-toggle:hover { background: #fff; color: #000; }
+.bg-off #bg { display: none; }
+.toggle-fixed {
+  position: fixed;
+  top: 1.3em;
+  right: 2ch;
+  z-index: 2;
+  margin: 0;
+  background: #000;
+}
+/* not enough room beside the page for the fixed box: put it at the end of the menu row */
+.toggle-inline { margin-left: auto; display: none; }
+@media (max-width: 1040px) {
+  .toggle-fixed { display: none; }
+  .toggle-inline { display: block; }
+}
+@media (max-width: 720px), (hover: none) and (pointer: coarse) {
+  .toggle-box, .toggle-inline { display: none; }
 }
 
 /* content boxes (everything except the menu and site header):

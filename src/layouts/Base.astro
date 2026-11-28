@@ -73,6 +73,8 @@ const personLd =
       html.loading body { visibility: hidden; }
     </style>
     <script is:inline>
+      // background switched off earlier? apply before anything is drawn (no flash)
+      try { if (localStorage.getItem("bg") === "off") document.documentElement.classList.add("bg-off"); } catch (e) {}
       if (!window.__framesReady) {
         document.documentElement.classList.add("loading", "js");
         setTimeout(() => document.documentElement.classList.remove("loading"), 1500);
@@ -85,6 +87,11 @@ const personLd =
   </head>
   <body>
     <pre id="bg" aria-hidden="true" transition:persist></pre>
+    {wide && (
+      <div class="frame toggle-box toggle-fixed" data-frame="single">
+        <button type="button" class="bg-toggle" aria-pressed="true">[x] background</button>
+      </div>
+    )}
     <div class="frame outer" data-frame="double">
       <header class="frame masthead" data-frame="single">
         <h1 class="name">{heading}</h1>
@@ -101,8 +108,18 @@ const personLd =
                   </a>
                 </li>
               ))}
+              {wide && (
+                <li class="toggle-inline">
+                  <button type="button" class="bg-toggle" aria-pressed="true">[x] background</button>
+                </li>
+              )}
             </ul>
           </nav>
+          {!wide && (
+            <div class="frame toggle-box" data-frame="single">
+              <button type="button" class="bg-toggle" aria-pressed="true">[x] background</button>
+            </div>
+          )}
         </aside>
 
         <main>
@@ -116,6 +133,7 @@ const personLd =
       import "../scripts/images.js";
       import "../scripts/viewer.js";
       import "../scripts/mandelbrot.js";
+      import "../scripts/bg-toggle.js";
     </script>
   </body>
 </html>

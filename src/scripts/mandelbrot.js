@@ -4,7 +4,7 @@
      restarts. the <pre id="bg"> element is kept across page changes
      (transition:persist), and this loop keeps running
    - clicking through images in a post isn't a page change, so the zoom carries on
-   - not drawn at all on narrow (phone) screens
+   - not drawn at all on phones / touch tablets, or when switched off (bg-toggle.js)
    - only the cells outside the page's outer box are calculated (the box is opaque),
      which keeps CPU use low
    - pauses while the tab is hidden; shows a still frame if the visitor has
@@ -29,7 +29,9 @@ if (!window.__mandelbrot && document.getElementById("bg")) {
 function start() {
   const bg = document.getElementById("bg");
   const names = (S.targets || Object.keys(TARGETS)).filter((n) => TARGETS[n]);
-  const mobile = matchMedia("(max-width: 720px)");
+  // phones (narrow) and touch-first devices (phones in landscape, tablets): no background
+  const mobile = matchMedia("(max-width: 720px), (hover: none) and (pointer: coarse)");
+  const off = () => mobile.matches || document.documentElement.classList.contains("bg-off");
   let tx = 0, ty = 0, cover = null;
   function newPage() {
     [tx, ty] = TARGETS[names[Math.floor(Math.random() * names.length)] || "seahorse"];
@@ -152,7 +154,7 @@ function start() {
   addEventListener("resize", measure);
 
   if (reduced) {
-    const still = () => { if (!mobile.matches) render(0); };
+    const still = () => { if (!off()) render(0); };
     still();
     addEventListener("resize", still);
     document.addEventListener("astro:after-swap", still);
@@ -163,7 +165,7 @@ function start() {
     requestAnimationFrame(frame);
     const dt = Math.min(0.25, (now - last) / 1000);   // don't jump ahead after the tab was hidden
     last = now;
-    if (document.hidden || mobile.matches) return;   // hidden tab or phone: do nothing
+    if (document.hidden || off()) return;   // hidden tab, phone, or switched off: do nothing
     t += dt;
     if (now - lastDraw < 1000 / S.fps - 1) return;
     lastDraw = now;
