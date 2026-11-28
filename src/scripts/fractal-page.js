@@ -1,10 +1,11 @@
 /* Full-screen fractal page (/fractal/, not linked from the site).
    Same look as the background (src/data/background.json), plus:
-   - mouse                  the zoom heads toward wherever the pointer is: the spot under
-                            the pointer glides to the middle of the screen. eased, not
-                            linear: it slows as it arrives, and drifts gently when the
-                            pointer is near the middle but pulls hard near the edges
-   - W / S                  follow faster / slower
+   - mouse                  a line is drawn from the middle of the screen to the pointer.
+                            the view travels along that line: its direction is the
+                            direction of travel, its length the speed (non-linear:
+                            short = slow drift, long = fast). pointer in the small circle
+                            in the middle, or outside the window: no movement
+   - W / S                  faster / slower overall
    - - and =                smaller / larger characters (more / less resolution)
    - r                      restart the zoom at a new random point
    - h                      hide / show the info line
@@ -20,9 +21,11 @@ const S = {
 };
 const MIN_FPS = 20;
 const MAX_ZOOM_LOG = 43;          // 2^43 ≈ 9e12: past this, double precision turns blocky
-let FOLLOW = 0.8;                 // how fast the centre follows the pointer (per second); w / s change it
-const FOLLOW_MIN = 0.05, FOLLOW_MAX = 8, FOLLOW_STEP = 1.25;
-const CURVE = 0.6;                // >0: weaker pull near the middle, stronger near the edges
+let SPEED = 1;                    // overall travel speed; w / s multiply / divide it
+const SPEED_MIN = 0.05, SPEED_MAX = 20, SPEED_STEP = 1.25;
+const MAX_SPEED = 0.8;            // screen-widths per second with the pointer at the window's edge (at SPEED 1)
+const CURVE = 1.6;                // speed = (distance / edge distance) ^ CURVE: >1 = gentle near the middle
+const DEAD = 14;                  // px radius around the middle where nothing moves
 const FONT_MIN = 3, FONT_MAX = 24, FONT_STEP = 1;
 
 const el = document.getElementById("fractal");
@@ -58,8 +61,8 @@ function moveBy(pxX, pxY) {
 addEventListener("keydown", (e) => {
   if (e.altKey || e.ctrlKey || e.metaKey) return;
   const k = e.key.toLowerCase();
-  if (k === "w") FOLLOW = Math.min(FOLLOW_MAX, FOLLOW * FOLLOW_STEP);
-  else if (k === "s") FOLLOW = Math.max(FOLLOW_MIN, FOLLOW / FOLLOW_STEP);
+  if (k === "w") SPEED = Math.min(SPEED_MAX, SPEED * SPEED_STEP);
+  else if (k === "s") SPEED = Math.max(SPEED_MIN, SPEED / SPEED_STEP);
   else if (k === "r") restart("r key");
   else if (k === "h") hud.hidden = !hud.hidden;
   else if (k === "-" || k === "_") setFont(S.fontSize - FONT_STEP);
@@ -75,6 +78,35 @@ function setFont(px) {
   frames = []; lowSince = null; fpsFrom = performance.now();   // fps changes with resolution: measure afresh
 }
 
+// velocity in screen pixels per second, from the pointer's offset from the middle
+function steer() {
+  if (!mouse) return null;
+  const dx = mouse.x - innerWidth / 2, dy = mouse.y - innerHeight / 2;
+  const dist = Math.hypot(dx, dy);
+  if (dist <= DEAD) return { dx, dy, dist, vx: 0, vy: 0 };
+  const edge = Math.min(innerWidth, innerHeight) / 2;          // distance to the nearest edge
+  const k = Math.pow(Math.min(1.5, (dist - DEAD) / (edge - DEAD)), CURVE);
+  const speed = k * MAX_SPEED * innerWidth * SPEED;            // px per second
+  return { dx, dy, dist, vx: (dx / dist) * speed, vy: (dy / dist) * speed };
+}
+
+// the on-screen line from the middle to the pointer (svg in fractal.astro)
+const svg = document.getElementById("vec");
+const line = svg.querySelector("line");
+const ring = svg.querySelector("circle");
+function drawVector(vec) {
+  const mx = innerWidth / 2, my = innerHeight / 2;
+  svg.setAttribute("viewBox", `0 0 ${innerWidth} ${innerHeight}`);
+  ring.setAttribute("cx", mx); ring.setAttribute("cy", my); ring.setAttribute("r", DEAD);
+  svg.classList.toggle("idle", !vec || vec.dist <= DEAD);
+  if (vec && vec.dist > DEAD) {
+    line.setAttribute("x1", mx + (vec.dx / vec.dist) * DEAD);
+    line.setAttribute("y1", my + (vec.dy / vec.dist) * DEAD);
+    line.setAttribute("x2", mouse.x);
+    line.setAttribute("y2", mouse.y);
+  }
+}
+
 function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.25, (now - last) / 1000);
@@ -87,19 +119,10 @@ function frame(now) {
   t += step;
   zl += zoomRate * step;
 
-  // follow the pointer: move part of the way from the screen middle toward it.
-  // 1 - e^(-rate*dt) gives smooth easing that doesn't depend on the frame rate;
-  // the distance curve makes small offsets drift and large ones pull hard
-  if (mouse) {
-    const dx = mouse.x - innerWidth / 2, dy = mouse.y - innerHeight / 2;
-    const dist = Math.hypot(dx, dy);
-    if (dist > 0.5) {
-      const reach = Math.hypot(innerWidth, innerHeight) / 2;
-      const rate = FOLLOW * Math.pow(Math.min(1, dist / reach), CURVE) * 3;
-      const f = 1 - Math.exp(-rate * step);
-      moveBy(dx * f, dy * f);
-    }
-  }
+  // travel along the vector from the screen's middle to the pointer
+  const vec = steer();
+  if (vec) moveBy(vec.vx * step, vec.vy * step);
+  drawVector(vec);
 
   R.render({ cx, cy, zl, sec: t });
 
@@ -118,8 +141,8 @@ function frame(now) {
     hud.textContent =
       `zoom ${Math.pow(2, zl).toExponential(1)}  ${ready ? fps : "--"} fps  iter ${R.maxIter}  ` +
       `font ${S.fontSize}px (${R.cols}x${R.rows})` + (note ? `  ${note}` : "") +
-      `  follow ${FOLLOW.toFixed(2)}` +
-      `\nmouse steers   w s follow faster/slower   - = resolution   r restart   h hide`;
+      `  speed ${SPEED.toFixed(2)}` +
+      `\nmouse: direction + speed   w s faster/slower   - = resolution   r restart   h hide`;
   }
 }
 
