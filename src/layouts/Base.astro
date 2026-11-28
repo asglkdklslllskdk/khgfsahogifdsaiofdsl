@@ -88,7 +88,7 @@ const personLd =
   <body>
     <pre id="bg" aria-hidden="true" transition:persist></pre>
     {wide && (
-      <p class="toggle-box toggle-fixed"><span class="toggle-label">background :</span> <button type="button" class="bg-toggle" aria-pressed="true" aria-label="background animation">on</button></p>
+      <p class="toggle-box toggle-fixed"><button type="button" class="bg-toggle" aria-pressed="true">background : <span class="bg-state">on</span></button></p>
     )}
     <div class="frame outer" data-frame="double">
       <header class="frame masthead" data-frame="single">
@@ -108,13 +108,13 @@ const personLd =
               ))}
               {wide && (
                 <li class="toggle-inline">
-                  <span class="toggle-label">background :</span> <button type="button" class="bg-toggle" aria-pressed="true" aria-label="background animation">on</button>
+                  <button type="button" class="bg-toggle" aria-pressed="true">background : <span class="bg-state">on</span></button>
                 </li>
               )}
             </ul>
           </nav>
           {!wide && (
-            <p class="toggle-box"><span class="toggle-label">background :</span> <button type="button" class="bg-toggle" aria-pressed="true" aria-label="background animation">on</button></p>
+            <p class="toggle-box"><button type="button" class="bg-toggle" aria-pressed="true">background : <span class="bg-state">on</span></button></p>
           )}
         </aside>
 

@@ -145,7 +145,7 @@ main, aside { min-width: 0; margin: 0; }
    - post pages: fixed in the top-right corner of the window, when there's room
      beside the page; on narrower windows, at the right end of the menu row
    - never on phones or touch-screen tablets (no background there) */
-.bg-toggle {                    /* only the on/off word is the button */
+.bg-toggle {                    /* the whole "background : on" is clickable... */
   font: inherit;
   color: inherit;
   background: none;
@@ -153,7 +153,9 @@ main, aside { min-width: 0; margin: 0; }
   padding: 0;
   cursor: pointer;
 }
-.bg-toggle:hover { background: #fff; color: #000; }
+.bg-toggle:hover { background: none; color: inherit; }
+.bg-toggle:hover .bg-state,     /* ...but only the on/off word lights up */
+.bg-toggle:focus-visible .bg-state { background: #fff; color: #000; }
 .bg-off #bg { display: none; }
 
 /* sidebar pages: plain line right under the menu box, lined up with its text */

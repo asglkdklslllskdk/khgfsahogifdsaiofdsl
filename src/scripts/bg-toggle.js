@@ -13,7 +13,8 @@ if (!window.__bgToggle) {
   const apply = () => {
     document.documentElement.classList.toggle("bg-off", !on);
     document.querySelectorAll(".bg-toggle").forEach((b) => {
-      b.textContent = on ? "on" : "off";
+      const state = b.querySelector(".bg-state");
+      if (state) state.textContent = on ? "on" : "off";
       b.setAttribute("aria-pressed", String(on));
     });
     if (!on) { const bg = document.getElementById("bg"); if (bg) bg.textContent = ""; }
